@@ -1,0 +1,19 @@
+services:
+  front: #サービス名
+    build: ./front
+    volumes: #バインドマウント
+      - ./front:/usr/src/app
+      - /usr/src/app/node_modules # ホスト側に node_modules をマウントしない
+    ports:
+      - "3000:3000"
+
+  back:
+    build: ./back
+    image: node:16.14.0
+    working_dir: /usr/src/app
+    tty: true
+    ports: 
+    - '3001:3001'
+    volumes:
+      - ./back:/usr/src/app:delegated
+      - /usr/src/app/node_modules # ホスト側に node_modules をマウントしない

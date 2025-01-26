@@ -1,0 +1,86 @@
+import React, { useState } from "react";
+const techniques = [
+  { No: 1, type: "打撃", frame: 1, cancel_frame: 1, range: 1, damage: 1, effect: "反撃できない", name: "音を置き去りにした一撃" },
+  { No: 2, type: "打撃", frame: 1, cancel_frame: 1, range: 2, damage: 1, effect: "-", name: "マッハキック" },
+  { No: 3, type: "打撃", frame: 2, cancel_frame: 2, range: 1, damage: 2, effect: "-", name: "こしあんパンチ" },
+  { No: 4, type: "打撃", frame: 2, cancel_frame: 2, range: 1, damage: 1, effect: "1ドロー", name: "二重の高み" },
+  { No: 5, type: "打撃", frame: 2, cancel_frame: 2, range: 2, damage: 1, effect: "-", name: "猫キック" },
+  { No: 6, type: "打撃", frame: 3, cancel_frame: 3, range: 2, damage: 2, effect: "1-2F 無敵", name: "ウィンターソルト" },
+  { No: 7, type: "打撃", frame: 3, cancel_frame: 3, range: 2, damage: 3, effect: "-", name: "糸断" },
+  { No: 8, type: "打撃", frame: 4, cancel_frame: 3, range: 2, damage: 2, effect: "2枚目以降に使用する場合+1", name: "ラッシュストレート" },
+  { No: 9, type: "打撃", frame: 4, cancel_frame: 4, range: 3, damage: 2, effect: "-", name: "八艘ジャンプ" },
+  { No: 10, type: "打撃", frame: 4, cancel_frame: 1, range: 2, damage: 3, effect: "-", name: "ハイパー頭突き" },
+  { No: 11, type: "打撃", frame: 4, cancel_frame: 4, range: 2, damage: 2, effect: "範囲内にいる攻撃対象ではない相手にも1ダメ", name: "ハリケーン旋風脚" },
+  { No: 12, type: "打撃", frame: 5, cancel_frame: 2, range: 3, damage: 3, effect: "-", name: "ソニックブーン" },
+  { No: 13, type: "打撃", frame: 5, cancel_frame: 2, range: 4, damage: 3, effect: "-", name: "ヨーガパンチ" },
+  { No: 14, type: "打撃", frame: 6, cancel_frame: 2, range: 4, damage: 3, effect: "-", name: "暗黒ボール" },
+  { No: 15, type: "打撃", frame: 6, cancel_frame: 6, range: 4, damage: 4, effect: "-", name: "誇りのバーストストリーム" },
+  { No: 16, type: "ガード", frame: "-", cancel_frame: "-", range: "-", damage: "-", effect: "1ドロー", name: "パリィン" },
+  { No: 17, type: "ガード", frame: "-", cancel_frame: "-", range: "-", damage: "-", effect: "ラウンド終了時までダメージを受けない", name: "盾の構え" },
+  { No: 18, type: "ガード", frame: "-", cancel_frame: "-", range: "-", damage: 1, effect: "ラウンド終了時までダメ+1", name: "流水星霜圏" },
+  { No: 19, type: "ガード", frame: "-", cancel_frame: "-", range: "-", damage: 1, effect: "相手の手札をランダムに1枚捨てる", name: "不抜" },
+  { No: 20, type: "ガード", frame: "-", cancel_frame: "-", range: "-", damage: 1, effect: "ラウンド終了時まで被ダメ-1", name: "因果律予想" },
+  { No: 21, type: "ガード", frame: "-", cancel_frame: "-", range: "-", damage: 2, effect: "-", name: "聖なる結界：鏡の力" },
+  { No: 22, type: "ガード", frame: "-", cancel_frame: "-", range: "-", damage: 2, effect: "-", name: "弁慶立ち" },
+  { No: 23, type: "投げ", frame: 2, cancel_frame: 2, range: 1, damage: 2, effect: "-", name: "背負われ投げ" },
+  { No: 24, type: "投げ", frame: 2, cancel_frame: 2, range: 2, damage: 2, effect: "-", name: "スクリューパイプドライバー" },
+  { No: 25, type: "投げ", frame: 3, cancel_frame: 3, range: 2, damage: 2, effect: "当てた相手を1F後ろにずらす", name: "天岩戸開き" },
+  { No: 26, type: "投げ", frame: 3, cancel_frame: 3, range: 2, damage: 2, effect: "自分と相手はラウンド終了時までダメージを受けない", name: "スカイダイビングプレス" },
+  { No: 27, type: "投げ", frame: 4, cancel_frame: 4, range: 3, damage: 3, effect: "-", name: "地獄駄門" },
+  { No: 28, type: "投げ", frame: 4, cancel_frame: 1, range: 2, damage: 3, effect: "-", name: "大紅葉投げ" },
+  { No: 29, type: "投げ", frame: 5, cancel_frame: 1, range: 2, damage: 3, effect: "1-4 F無敵", name: "北の大地ブリザード" },
+  { No: 30, type: "投げ", frame: 5, cancel_frame: 2, range: 3, damage: 3, effect: "-", name: "アーススロー" },
+  { No: 31, type: "投げ", frame: 6, cancel_frame: 2, range: 2, damage: 3, effect: "範囲内にいる攻撃対象ではない相手にも1ダメ", name: "ロープ揺らし" },
+  { No: 32, type: "投げ", frame: 6, cancel_frame: 2, range: 4, damage: 3, effect: "-", name: "砂漠少衝" },
+  { No: 33, type: "投げ", frame: 6, cancel_frame: "-", range: 2, damage: 5, effect: "-", name: "誓不殺" },
+];
+function App() {
+  // 元の配列を状態として管理
+  const [elements, setElements] = useState(techniques);
+
+
+  // ランダムに選ばれた要素を状態として管理
+  const [randomTwo, setRandomTwo] = useState([]);
+
+  // ボタンクリックで新しい2つの要素を選択
+  const handleRandomize = () => {
+    
+  // ランダムに2つの要素を取得して元の配列から削除
+    if (elements.length < 2) {
+      alert("要素が2つ未満のため選択できません");
+      return [];
+    }
+    const shuffled = [...elements].sort(() => Math.random() - 0.5);
+    const selected = shuffled.slice(0, 2);
+    const remaining = elements.filter((el) => !selected.some((sel) => sel.No === el.No));
+    setElements(remaining);
+    setRandomTwo(selected);
+  };
+
+  return (
+    <div>
+      <button onClick={handleRandomize}>ランダムに選択</button>
+      <div>
+        {randomTwo.map((item) => (
+          <div key={item.No}>
+            <h3>{item.name}</h3>
+            <p>種別: {item.type}</p>
+            <p>F: {item.frame}</p>
+            <p>間合い: {item.cancel_frame}</p>
+            <p>ダメージ: {item.damage}</p>
+            <p>効果: {item.effect}</p>
+          </div>
+        ))}
+      </div>
+      <div>
+        {elements.map((item) => (
+          <div key={item.No}>
+            <h3>{item.name}</h3>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default App;
