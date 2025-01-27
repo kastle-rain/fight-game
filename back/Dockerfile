@@ -19,6 +19,7 @@ COPY . .
 
 # 開発用サーバーを起動
 CMD ["node", "src/server.js"]
+# CMD ["ts-node-dev", "src/server.js"]
 
 # ポート3001番を開放する
 EXPOSE 3001
