@@ -8,8 +8,9 @@ app.use(express.json());
 const techniques = require("./data"); // 技データのインポート
 const clientData = {}; // クライアントIDごとのデータを保存するオブジェクト
 const market = {
-  ba:[]
+  ba: []
 };
+//　サーバー立ち上げ時に山札をシャッフル
 market.yamahuda = [...techniques].sort(() => Math.random() - 0.5);
 
 // 初期処理
@@ -22,11 +23,15 @@ app.get("/", (req, res) => {
   if (!clientData[clientId]) {
     clientData[clientId] = {
       tehuda: [],
+      yamahuda: [],
+      sutehuda: [],
     };
   }
   res.json({
     clientData: clientData[clientId],
-    market: market
+    market: market,
+    numberMarketYama: market.yamahuda.length,
+    numberYamahuda:clientData[clientId].yamahuda.length
   });
 });
 
@@ -46,17 +51,27 @@ app.post("/draw", (req, res) => {
     return res.status(400).json({ message: "No remaining techniques in market" });
   }
 
-  const selected = market.yamahuda[0];
+  if (data.yamahuda.length === 0) {
+    if (data.sutehuda.length === 0) {
+      return res.status(400).json({ message: "山札と捨て札が0枚です" });
+    }
+    // 山札がないときは捨て札を山札に戻す
+    data.yamahuda = [...data.sutehuda].sort(() => Math.random() - 0.5);
+    data.sutehuda = [];
+  }
 
   // 残りの技を更新
-  market.yamahuda = market.yamahuda.slice(1); // 残りの技を更新
+  const selected = data.yamahuda[0];
+  data.yamahuda = data.yamahuda.slice(1); // 残りの技を更新
   // market.yamahuda = market.yamahuda.filter(
   //   (el) => !selected.some((sel) => sel.No === el.No)
   // );
   data.tehuda.push(selected);
   res.json({
-    tehuda: data.tehuda,
-    marketYamahuda: market.yamahuda,
+    clientData: data,
+    numberMarketYama: market.yamahuda.length,
+    marketBa: market.ba,
+    numberYamahuda:clientData[clientId].yamahuda.length
   });
 });
 
@@ -68,16 +83,15 @@ app.post("/drawBa", (req, res) => {
   }
 
   const selected = market.yamahuda[0];
-
   // 残りの技を更新
   market.yamahuda = market.yamahuda.slice(1); // 残りの技を更新
   market.ba.push(selected);
-  console.log(market.ba);
   res.json({
-    marketBa: market.ba
+    marketBa: market.ba,
+    numberMarketYama: market.yamahuda.length
   });
 });
-// データをリセット
+// 初期化をクリックしたときの動作
 app.post("/reset", (req, res) => {
   const clientId = req.headers.clientid;
   if (!clientId) {
@@ -89,11 +103,13 @@ app.post("/reset", (req, res) => {
   Object.keys(clientData).forEach((id) => {
     clientData[id].tehuda = [];
     clientData[id].sutehuda = [];
+    clientData[id].yamahuda = [];
   });
 
   res.json({
     clientData: clientData[clientId],
-    market: market
+    market: market,
+    numberMarketYama: market.yamahuda.length
   });
 });
 

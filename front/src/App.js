@@ -4,12 +4,14 @@ import { v4 as uuidv4 } from "uuid"; // UUIDライブラリを利用
 import Cookies from "js-cookie";
 
 function App() {
-  const [marketYamahuda, setMarketYamahuda] = useState([]);
+  const [numberMarketYama,setNumberMarketYama] = useState(0);
   const [marketBa, setMarketBa] = useState([]);
+  const [numberYamahuda, setNumberYamahuda] = useState(0);
   const [tehuda, setTehuda] = useState([]);
   const [sutehuda, setSutehuda] = useState([]);
   const BASE_URL = `http://${window.location.hostname}:3001`;
   const [hoveredItem, setHoveredItem] = useState(null); // ホバー中のアイテム
+  //初期処理
   useEffect(() => {
     // クライアントIDを取得または生成してCookieに保存
     let clientId = Cookies.get("clientId");
@@ -23,18 +25,21 @@ function App() {
       .get(BASE_URL, { headers: { clientId } })
       .then((response) => {
         setTehuda(response.data.clientData.tehuda);
-        setMarketYamahuda(response.data.market.yamahuda);
         setMarketBa(response.data.market.ba);
+        setNumberMarketYama(response.data.numberMarketYama);
+        setSutehuda(response.data.clientData.sutehuda);
+        setNumberYamahuda(response.data.numberYamahuda);
       });
   }, []);
 
-
+  //「場に1枚置く」をクリックしたときの処理
   const drawBa = () => {
     axios
       .post(BASE_URL + "/drawBa") // クライアントIDを送信
       .then((response) => {
-        const { marketBa } = response.data;
+        const { marketBa,numberMarketYama } = response.data;
         setMarketBa(marketBa);
+        setNumberMarketYama(numberMarketYama);
       })
       .catch((error) => {
         if (error.response) {
@@ -49,19 +54,16 @@ function App() {
       });
   };
 
-
-  const handleRandomize = () => {
-    if (marketYamahuda.length < 2) {
-      alert("要素が2つ未満のため選択できません");
-      return;
-    }
+  const draw = () => {
     const clientId = Cookies.get("clientId"); // クライアントIDを取得
     axios
       .post(BASE_URL + "/draw", {}, { headers: { clientId } }) // クライアントIDを送信
       .then((response) => {
-        const { tehuda, marketYamahuda } = response.data;
-        setMarketYamahuda(marketYamahuda);
-        setTehuda(tehuda);
+        setTehuda(response.data.clientData.tehuda);
+        setMarketBa(response.data.marketBa);
+        setNumberMarketYama(response.data.numberMarketYama);
+        setSutehuda(response.data.clientData.sutehuda);
+        setNumberYamahuda(response.data.numberYamahuda);
       })
       .catch((error) => {
         if (error.response) {
@@ -76,6 +78,7 @@ function App() {
       });
   };
 
+  // 初期化ボタンを押したときの動作
   const reset = () => {
     const clientId = Cookies.get("clientId"); // クライアントIDを取得
 
@@ -85,6 +88,7 @@ function App() {
         setTehuda(response.data.clientData.tehuda);
         setSutehuda(response.data.clientData.sutehuda);
         setMarketBa(response.data.market.ba);
+        setNumberMarketYama(response.data.numberMarketYama);
       })
       .catch((error) => {
         console.error("Failed to reset remaining:", error);
@@ -129,8 +133,8 @@ function App() {
   };
   return (
     <div>
-      <button onClick={drawBa}>場に1枚置く</button>
-      <button onClick={handleRandomize}>山札を1枚引く</button>
+      <button onClick={drawBa}>マーケット山札（{numberMarketYama}枚）から場に1枚置く</button>
+      <button onClick={draw}>自分の山札（{numberYamahuda}枚）を1枚引く</button>
       <button onClick={reset}>初期化</button>
       <div>
         <h2>マーケット</h2>

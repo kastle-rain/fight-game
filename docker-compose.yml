@@ -2,7 +2,7 @@ services:
   front: #サービス名
     build: ./front
     volumes: #バインドマウント
-      - ./front:/usr/src/app
+      - ./front:/usr/src/app:delegated
       - /usr/src/app/node_modules # ホスト側に node_modules をマウントしない
     ports:
       - "3000:3000"
