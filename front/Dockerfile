@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:18
 
 # node.js の環境変数を定義する
 # 本番環境では production

@@ -1,18 +1,56 @@
 const express = require("express");
 const cors = require("cors");
-
+const http = require("http"); // HTTP サーバー作成
+const { Server } = require("socket.io"); // Socket.io のサーバー
 const app = express();
+const server = http.createServer(app); // HTTP サーバー
+const playerlist = [];//プレイヤーリスト
+const io = new Server(server, {
+  cors: {
+    origin: `http://localhost:3000`, // フロントエンドのURLを設定
+    methods: ["GET", "POST"],
+    credentials: true, // これを追加
+  },
+});
 app.use(cors());
 app.use(express.json());
 
 const techniques = require("./data"); // 技データのインポート
 const clientData = {}; // クライアントIDごとのデータを保存するオブジェクト
+let ba = [];
 const market = {
-  ba: []
+  ba: [],
+  yamahuda:[]
 };
 //　サーバー立ち上げ時に山札をシャッフル
 market.yamahuda = [...techniques].sort(() => Math.random() - 0.5);
 
+
+// プレイヤーが接続したとき
+io.on("connection", (socket) => {
+  console.log("クライアント接続:", socket.id);
+
+  socket.on("updateMarketBa", (data) => {
+    const marketBa= market.ba;
+    const numberMarketYama = market.yamahuda.length;
+    // クライアントに現在の場を送信
+    io.emit("updateMarketBa", { marketBa, numberMarketYama,ba });
+  });
+
+
+  // クライアントからメッセージを受け取る
+  socket.on("send_message", (data) => {
+    console.log("受信:", data);
+    io.emit("receive_message", data); // すべてのクライアントに送信
+  });
+
+  socket.on("disconnect", () => {
+    console.log("クライアント切断:", socket.id);
+  });
+});
+server.listen(5000, () => {
+  console.log("サーバー起動: http://localhost:5000");
+});
 // 初期処理
 app.get("/", (req, res) => {
   const clientId = req.headers.clientid;
@@ -31,7 +69,8 @@ app.get("/", (req, res) => {
     clientData: clientData[clientId],
     market: market,
     numberMarketYama: market.yamahuda.length,
-    numberYamahuda:clientData[clientId].yamahuda.length
+    numberYamahuda:clientData[clientId].yamahuda.length,
+    ba:ba
   });
 });
 
@@ -66,7 +105,9 @@ app.post("/draw", (req, res) => {
   // market.yamahuda = market.yamahuda.filter(
   //   (el) => !selected.some((sel) => sel.No === el.No)
   // );
+  // 手札に選択したカードを追加する
   data.tehuda.push(selected);
+  // データを送る
   res.json({
     clientData: data,
     numberMarketYama: market.yamahuda.length,
@@ -86,6 +127,8 @@ app.post("/drawBa", (req, res) => {
   // 残りの技を更新
   market.yamahuda = market.yamahuda.slice(1); // 残りの技を更新
   market.ba.push(selected);
+
+  // クライアントに現在の場を送信
   res.json({
     marketBa: market.ba,
     numberMarketYama: market.yamahuda.length
@@ -99,6 +142,7 @@ app.post("/reset", (req, res) => {
   }
   market.yamahuda = [...techniques].sort(() => Math.random() - 0.5);
   market.ba = [];
+  ba = [];
   // clientData のすべてのクライアントの `tehuda` を空にする
   Object.keys(clientData).forEach((id) => {
     clientData[id].tehuda = [];
@@ -109,7 +153,8 @@ app.post("/reset", (req, res) => {
   res.json({
     clientData: clientData[clientId],
     market: market,
-    numberMarketYama: market.yamahuda.length
+    numberMarketYama: market.yamahuda.length,
+    ba:ba
   });
 });
 
@@ -153,8 +198,8 @@ app.post("/getCard", (req, res) => {
 });
 
 
-// 捨て札に移動
-app.post("/discard", (req, res) => {
+// 手札から場に移動
+app.post("/useCard", (req, res) => {
   try {
     const { itemNo } = req.body; // リクエストボディから itemNo を取得
     const clientId = req.headers.clientid; // ヘッダーから clientId を取得
@@ -173,19 +218,60 @@ app.post("/discard", (req, res) => {
     }
 
     // 捨て札配列が存在しない場合は初期化
-    if (!data.sutehuda) {
-      data.sutehuda = [];
+    if (!ba) {
+      ba = [];
     }
 
     // アイテムを捨て札に移動
-    const discardedItem = data.tehuda.splice(index, 1)[0];
-    data.sutehuda.push(discardedItem);
+    const usedItem = data.tehuda.splice(index, 1)[0];
+    const element = {
+      card:usedItem,
+      id:clientId
+    }
+    ba.push(element);
 
     // レスポンスを返す
     res.json({
       message: "Item successfully discarded",
       clientData: data,
-      market,
+      ba:ba,
+    });
+  } catch (error) {
+    console.error("Error in /discard endpoint:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+
+app.post("/discard", (req, res) => {
+  try {
+    const { itemNo } = req.body; // リクエストボディから itemNo を取得
+    const clientId = req.headers.clientid; // ヘッダーから clientId を取得
+
+    // clientId の確認
+    if (!clientId || !clientData[clientId]) {
+      return res.status(400).json({ message: "Invalid or missing Client ID" });
+    }
+
+    const data = clientData[clientId];
+    const index = ba.findIndex((item) => item.card.No === itemNo);
+
+    if (index === -1) {
+      return res.status(404).json({ message: "Item not found in tehuda" });
+    }
+    // 捨て札配列が存在しない場合は初期化
+    if (!data.sutehuda) {
+      data.sutehuda = [];
+    }
+
+    // アイテムを捨て札に移動
+    const discardedItem = ba.splice(index, 1)[0];
+    data.sutehuda.push(discardedItem.card);
+    // レスポンスを返す
+    res.json({
+      message: "Item successfully discarded",
+      clientData: data,
+      ba:ba
     });
   } catch (error) {
     console.error("Error in /discard endpoint:", error);
