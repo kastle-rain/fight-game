@@ -5,9 +5,11 @@ const { Server } = require("socket.io"); // Socket.io のサーバー
 const app = express();
 const server = http.createServer(app); // HTTP サーバー
 const playerlist = [];//プレイヤーリスト
+const API_ENDPOINT = "http://localhost";
+// const API_ENDPOINT = "http://162.43.31.57";
 const io = new Server(server, {
   cors: {
-    origin: `http://localhost:3000`, // フロントエンドのURLを設定
+    origin: [`${API_ENDPOINT}:3000`], // フロントエンドのURLを設定
     methods: ["GET", "POST"],
     credentials: true, // これを追加
   },

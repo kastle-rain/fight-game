@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:5000", {
+const socket = io(`http://${window.location.hostname}:5000`, {
   transports: ["websocket", "polling"], // 優先する通信方式を指定
   withCredentials: true, // これを追加
 });

@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid"; // UUIDライブラリを利用
 import Cookies from "js-cookie";
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:5000", {
+const socket = io(`http://${window.location.hostname}:5000`, {
   transports: ["websocket", "polling"], // 優先する通信方式を指定
   withCredentials: true, // これを追加
 });
@@ -226,10 +226,41 @@ function Home() {
       <button onClick={drawBa}>マーケット山札（{numberMarketYama}枚）から場に1枚置く</button>
       <button onClick={draw}>自分の山札（{numberYamahuda}枚）を1枚引く</button>
       <button onClick={reset}>初期化</button>
-      <div>
-        <h2>場</h2>
+      <h2>手札</h2>
+      <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+
+        {tehuda.map((item) => (
+          <div key={item.No} style={{ 
+            border: "1px solid #ccc", 
+            padding: "10px", 
+            borderRadius: "8px",
+            backgroundColor: "#f9f9f9",
+            minWidth: "200px",
+            textAlign: "center"
+          }}>
+            <h3>{item.name}</h3>
+            <p>種別: {item.type}</p>
+            <p>F: {item.frame}</p>
+            <p>間合い: {item.cancel_frame}</p>
+            <p>ダメージ: {item.damage}</p>
+            <p>効果: {item.effect}</p>
+            <button onClick={() => handleUse(item)}>場に提出</button>
+          </div>
+        ))}
+      </div>
+      <h2>場</h2>
+      <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+
         {ba.map((item) => (
-          <div key={item.card.No}>
+          <div key={item.card.No}
+          style={{ 
+            border: "1px solid #ccc", 
+            padding: "10px", 
+            borderRadius: "8px",
+            backgroundColor: "#f9f9f9",
+            minWidth: "200px",
+            textAlign: "center"
+          }}>
             <h3>{item.card.name}</h3>
             <p>種別: {item.card.type}</p>
             <p>F: {item.card.frame}</p>
@@ -243,10 +274,19 @@ function Home() {
           </div>
         ))}
       </div>
-      <div>
-        <h2>マーケット</h2>
+      <h2>マーケット</h2>
+      <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+
         {marketBa.map((item) => (
-          <div key={item.No}>
+          <div key={item.No}style={{ 
+            border: "1px solid #ccc", 
+            padding: "10px", 
+            borderRadius: "8px",
+            backgroundColor: "#f9f9f9",
+            minWidth: "200px",
+            textAlign: "center"
+          }}>
+            
             <h3>{item.name}</h3>
             <p>種別: {item.type}</p>
             <p>F: {item.frame}</p>
@@ -258,20 +298,7 @@ function Home() {
           </div>
         ))}
       </div>
-      <div>
-        <h2>手札</h2>
-        {tehuda.map((item) => (
-          <div key={item.No}>
-            <h3>{item.name}</h3>
-            <p>種別: {item.type}</p>
-            <p>F: {item.frame}</p>
-            <p>間合い: {item.cancel_frame}</p>
-            <p>ダメージ: {item.damage}</p>
-            <p>効果: {item.effect}</p>
-            <button onClick={() => handleUse(item)}>場に提出</button>
-          </div>
-        ))}
-      </div>
+
 
       <div>
         <h2>捨て札</h2>
