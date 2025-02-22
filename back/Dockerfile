@@ -19,10 +19,6 @@ RUN npm install
 # アプリケーションコードをコピー
 COPY . .
 
-# COPY entrypoint.sh /usr/src/app/entrypoint.sh
-# RUN chmod +x /usr/src/app/entrypoint.sh
-# ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
-
 # 開発用サーバーを起動
 CMD ["node", "src/server.js"]
 # CMD ["ts-node-dev", "src/server.js"]

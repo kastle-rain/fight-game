@@ -36,5 +36,7 @@ services:
       POSTGRES_DB: mydatabase
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # - ./back/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      # - ./back/db/tequnique.csv:/docker-entrypoint-initdb.d/tequnique.csv
 volumes:
   postgres_data:
