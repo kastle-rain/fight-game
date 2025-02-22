@@ -58,15 +58,13 @@ server.listen(5000, () => {
 // 初期処理
 
 app.get("/", async (req, res) => {
-  console.log("tequniques = " + techniques);
-  console.log(!techniques);
   if (!techniques) {
+    console.log(require("./data"));
     const result = await pool.query("SELECT * FROM tequniques");
     techniques = result.rows;
-    console.log("tequniques = " + techniques);
+    console.log(techniques);
     //　サーバー立ち上げ時に山札をシャッフル
     market.yamahuda = [...techniques].sort(() => Math.random() - 0.5);
-    console.log(result);
   }
   const clientId = req.headers.clientid;
   if (!clientId) {
@@ -127,7 +125,7 @@ app.post("/draw", (req, res) => {
   const selected = data.yamahuda[0];
   data.yamahuda = data.yamahuda.slice(1); // 残りの技を更新
   // market.yamahuda = market.yamahuda.filter(
-  //   (el) => !selected.some((sel) => sel.No === el.No)
+  //   (el) => !selected.some((sel) => sel.no === el.no)
   // );
   // 手札に選択したカードを追加する
   data.tehuda.push(selected);
@@ -194,9 +192,9 @@ app.post("/getCard", (req, res) => {
     }
 
     const data = clientData[clientId];
-
+    console.log("itemNo = " + itemNo);
     // ba の中から指定された itemNo を探す
-    const index = market.ba.findIndex((item) => item.No === itemNo);
+    const index = market.ba.findIndex((item) => item.no === itemNo);
     if (index === -1) {
       return res.status(404).json({ message: "Item not found in tehuda" });
     }
@@ -236,7 +234,7 @@ app.post("/useCard", (req, res) => {
     const data = clientData[clientId];
 
     // tehuda の中から指定された itemNo を探す
-    const index = data.tehuda.findIndex((item) => item.No === itemNo);
+    const index = data.tehuda.findIndex((item) => item.no === itemNo);
     if (index === -1) {
       return res.status(404).json({ message: "Item not found in tehuda" });
     }
@@ -278,7 +276,7 @@ app.post("/discard", (req, res) => {
     }
 
     const data = clientData[clientId];
-    const index = ba.findIndex((item) => item.card.No === itemNo);
+    const index = ba.findIndex((item) => item.card.no === itemNo);
 
     if (index === -1) {
       return res.status(404).json({ message: "Item not found in tehuda" });

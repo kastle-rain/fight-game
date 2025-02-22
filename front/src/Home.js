@@ -122,7 +122,7 @@ function Home() {
     axios
       .post(
         BASE_URL + "/useCard",
-        { itemNo: item.No }, // ここで item.No を送信
+        { itemNo: item.no }, // ここで item.no を送信
         { headers: { clientId } }
       )
       .then((response) => {
@@ -143,7 +143,7 @@ function Home() {
     axios
       .post(
         BASE_URL + "/discard",
-        { itemNo: item.No }, // ここで item.No を送信
+        { itemNo: item.no }, // ここで item.no を送信
         { headers: { clientId } }
       )
       .then((response) => {
@@ -182,7 +182,7 @@ function Home() {
     axios
       .post(
         BASE_URL + "/getCard",
-        { itemNo: item.No }, // ここで item.No を送信
+        { itemNo: item.no }, // ここで item.no を送信
         { headers: { clientId } }
       )
       .then((response) => {
@@ -230,7 +230,7 @@ function Home() {
       <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
 
         {tehuda.map((item) => (
-          <div key={item.No} style={{ 
+          <div key={item.no} style={{ 
             border: "1px solid #ccc", 
             padding: "10px", 
             borderRadius: "8px",
@@ -239,6 +239,7 @@ function Home() {
             textAlign: "center"
           }}>
             <h3>{item.name}</h3>
+            <p>No: {item.no}</p>
             <p>種別: {item.type}</p>
             <p>F: {item.frame}</p>
             <p>間合い: {item.cancel_frame}</p>
@@ -252,7 +253,7 @@ function Home() {
       <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
 
         {ba.map((item) => (
-          <div key={item.card.No}
+          <div key={item.card.no}
           style={{ 
             border: "1px solid #ccc", 
             padding: "10px", 
@@ -278,7 +279,7 @@ function Home() {
       <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
 
         {marketBa.map((item) => (
-          <div key={item.No}style={{ 
+          <div key={item.no}style={{ 
             border: "1px solid #ccc", 
             padding: "10px", 
             borderRadius: "8px",
@@ -303,9 +304,9 @@ function Home() {
       <div>
         <h2>捨て札</h2>
         {sutehuda.map((item) => (
-          <div key={item.No}>
+          <div key={item.no}>
             <div
-              key={item.No}
+              key={item.no}
               onMouseEnter={() => setHoveredItem(item)} // ホバー開始
               onMouseLeave={() => setHoveredItem(null)} // ホバー終了
             >
