@@ -1,5 +1,6 @@
 services:
-  front: # フロントエンド
+  front:
+    # フロントエンド
     build: ./front
     volumes:
       - ./front:/usr/src/app:delegated
@@ -7,14 +8,33 @@ services:
     ports:
       - "3000:3000"
 
-  back: # バックエンド
+  back:
+    # バックエンド
     build: ./back
     image: node:16.14.0
     working_dir: /usr/src/app
     tty: true
-    ports: 
+    ports:
       - "3001:3001" # API のポート
       - "5000:5000" # Socket.IO のポートを追加
     volumes:
       - ./back:/usr/src/app:delegated
       - /usr/src/app/node_modules
+    depends_on:
+      - postgres
+      
+  postgres:
+    #DB接続設定
+    image: postgres:16
+    container_name: my_postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:

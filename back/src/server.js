@@ -6,10 +6,12 @@ const app = express();
 const server = http.createServer(app); // HTTP サーバー
 const playerlist = [];//プレイヤーリスト
 const API_ENDPOINT = "http://localhost";
+const pool = require("./db");
 // const API_ENDPOINT = "http://162.43.31.57";
 const io = new Server(server, {
   cors: {
-    origin: [`${API_ENDPOINT}:3000`], // フロントエンドのURLを設定
+    // origin: [`${API_ENDPOINT}:3000`], // フロントエンドのURLを設定
+    origin: [`http://front`], // フロントエンドのURLを設定
     methods: ["GET", "POST"],
     credentials: true, // これを追加
   },
@@ -75,7 +77,16 @@ app.get("/", (req, res) => {
     ba:ba
   });
 });
-
+// データ取得エンドポイント
+app.get("/users", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM users");
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
 // ランダムに選択して残りのデータを更新
 app.post("/draw", (req, res) => {
   const clientId = req.headers.clientid;

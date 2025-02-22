@@ -1,6 +1,8 @@
 # ベースイメージを指定
 FROM node:18
 
+
+
 # node.js の環境変数を定義する
 # 本番環境では production
 ENV NODE_ENV=development
@@ -16,6 +18,10 @@ RUN npm install
 
 # アプリケーションコードをコピー
 COPY . .
+
+# COPY entrypoint.sh /usr/src/app/entrypoint.sh
+# RUN chmod +x /usr/src/app/entrypoint.sh
+# ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
 
 # 開発用サーバーを起動
 CMD ["node", "src/server.js"]
