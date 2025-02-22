@@ -19,15 +19,15 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
-const techniques = require("./data"); // 技データのインポート
+// const techniques = require("./data"); // 技データのインポート
+let techniques; // 技データのインポート
 const clientData = {}; // クライアントIDごとのデータを保存するオブジェクト
 let ba = [];
 const market = {
   ba: [],
-  yamahuda:[]
+  yamahuda: []
 };
-//　サーバー立ち上げ時に山札をシャッフル
-market.yamahuda = [...techniques].sort(() => Math.random() - 0.5);
+
 
 
 // プレイヤーが接続したとき
@@ -35,10 +35,10 @@ io.on("connection", (socket) => {
   console.log("クライアント接続:", socket.id);
 
   socket.on("updateMarketBa", (data) => {
-    const marketBa= market.ba;
+    const marketBa = market.ba;
     const numberMarketYama = market.yamahuda.length;
     // クライアントに現在の場を送信
-    io.emit("updateMarketBa", { marketBa, numberMarketYama,ba });
+    io.emit("updateMarketBa", { marketBa, numberMarketYama, ba });
   });
 
 
@@ -56,7 +56,18 @@ server.listen(5000, () => {
   console.log("サーバー起動: http://localhost:5000");
 });
 // 初期処理
-app.get("/", (req, res) => {
+
+app.get("/", async (req, res) => {
+  console.log("tequniques = " + techniques);
+  console.log(!techniques);
+  if (!techniques) {
+    const result = await pool.query("SELECT * FROM tequniques");
+    techniques = result.rows;
+    console.log("tequniques = " + techniques);
+    //　サーバー立ち上げ時に山札をシャッフル
+    market.yamahuda = [...techniques].sort(() => Math.random() - 0.5);
+    console.log(result);
+  }
   const clientId = req.headers.clientid;
   if (!clientId) {
     return res.status(400).json({ message: "Client ID is required" });
@@ -73,14 +84,14 @@ app.get("/", (req, res) => {
     clientData: clientData[clientId],
     market: market,
     numberMarketYama: market.yamahuda.length,
-    numberYamahuda:clientData[clientId].yamahuda.length,
-    ba:ba
+    numberYamahuda: clientData[clientId].yamahuda.length,
+    ba: ba
   });
 });
 // データ取得エンドポイント
 app.get("/users", async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM users");
+    const result = await pool.query("SELECT * FROM tequniques");
     res.json(result.rows);
   } catch (err) {
     console.error(err.message);
@@ -125,7 +136,7 @@ app.post("/draw", (req, res) => {
     clientData: data,
     numberMarketYama: market.yamahuda.length,
     marketBa: market.ba,
-    numberYamahuda:clientData[clientId].yamahuda.length
+    numberYamahuda: clientData[clientId].yamahuda.length
   });
 });
 
@@ -167,7 +178,7 @@ app.post("/reset", (req, res) => {
     clientData: clientData[clientId],
     market: market,
     numberMarketYama: market.yamahuda.length,
-    ba:ba
+    ba: ba
   });
 });
 
@@ -238,8 +249,8 @@ app.post("/useCard", (req, res) => {
     // アイテムを捨て札に移動
     const usedItem = data.tehuda.splice(index, 1)[0];
     const element = {
-      card:usedItem,
-      id:clientId
+      card: usedItem,
+      id: clientId
     }
     ba.push(element);
 
@@ -247,7 +258,7 @@ app.post("/useCard", (req, res) => {
     res.json({
       message: "Item successfully discarded",
       clientData: data,
-      ba:ba,
+      ba: ba,
     });
   } catch (error) {
     console.error("Error in /discard endpoint:", error);
@@ -284,7 +295,7 @@ app.post("/discard", (req, res) => {
     res.json({
       message: "Item successfully discarded",
       clientData: data,
-      ba:ba
+      ba: ba
     });
   } catch (error) {
     console.error("Error in /discard endpoint:", error);
